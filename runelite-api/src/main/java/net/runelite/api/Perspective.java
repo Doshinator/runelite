@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import static net.runelite.api.Constants.TILE_FLAG_BRIDGE;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.model.Jarvis;
 import net.runelite.api.model.Triangle;
@@ -55,8 +56,6 @@ public class Perspective
 	public static final int LOCAL_TILE_SIZE = 1 << LOCAL_COORD_BITS; // 128 - size of a tile in local coordinates
 
 	public static final int SCENE_SIZE = Constants.SCENE_SIZE; // in tiles
-
-	private static final int TILE_FLAG_BRIDGE = 2;
 
 	public static final int[] SINE = new int[2048]; // sine angles for each of the 2048 units, * 65536 and stored as an int
 	public static final int[] COSINE = new int[2048]; // cosine
@@ -80,6 +79,7 @@ public class Perspective
 	 * @return a {@link Point} on screen corresponding to the position in
 	 * 3D-space
 	 */
+	@Nullable
 	public static Point localToCanvas(@Nonnull Client client, @Nonnull LocalPoint point, int plane)
 	{
 		return localToCanvas(client, point, plane, 0);
@@ -96,6 +96,7 @@ public class Perspective
 	 * @return a {@link Point} on screen corresponding to the position in
 	 * 3D-space
 	 */
+	@Nullable
 	public static Point localToCanvas(@Nonnull Client client, @Nonnull LocalPoint point, int plane, int zOffset)
 	{
 		final int tileHeight = getTileHeight(client, point, plane);
@@ -500,7 +501,7 @@ public class Perspective
 	 * @param point the coordinate of the tile
 	 * @return the clickable area of the model
 	 */
-	public static Area getClickbox(@Nonnull Client client, Model model, int orientation, @Nonnull LocalPoint point)
+	public static @Nullable Area getClickbox(@Nonnull Client client, Model model, int orientation, @Nonnull LocalPoint point)
 	{
 		if (model == null)
 		{
@@ -518,7 +519,7 @@ public class Perspective
 		Area clickBox = get2DGeometry(client, triangles, point);
 		Area visibleAABB = getAABB(client, vertices, point);
 
-		if (visibleAABB == null || clickBox == null)
+		if (visibleAABB == null)
 		{
 			return null;
 		}
@@ -540,7 +541,7 @@ public class Perspective
 			&& (point.getY() < 0 || point.getY() >= client.getViewportHeight());
 	}
 
-	private static Area get2DGeometry(
+	private static @Nonnull Area get2DGeometry(
 		@Nonnull Client client,
 		@Nonnull List<Triangle> triangles,
 		@Nonnull LocalPoint point
